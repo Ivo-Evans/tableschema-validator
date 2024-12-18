@@ -9,3 +9,24 @@ Limitations include:
 - Not integrating with other parts of the Datapackage standard
 
 The aim is for it to construct a _valid_ tableschema and to validate data against it, but there are still many parts of the spec that will not be implemented. 
+
+
+## Local development
+
+Run the program with 
+
+```
+go run .
+```
+
+Run tests with 
+
+```
+go test -v ./...
+```
+
+Lint the project with 
+
+```
+golangci-lint run # needs a local installation of golanci-lint
+```
