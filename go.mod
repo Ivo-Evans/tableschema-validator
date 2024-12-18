@@ -1,0 +1,4 @@
+module tableschema-validator
+
+go 1.23.0
+
