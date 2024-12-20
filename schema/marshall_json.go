@@ -38,9 +38,9 @@ func (fields Fields) MarshalJSON() ([]byte, error) {
 
 	}
 
-	marhsalled := fmt.Sprintf(`[%s]`, strings.Join(fieldStrings, `,`))
+	marshalled := fmt.Sprintf(`[%s]`, strings.Join(fieldStrings, `,`))
 
-	return []byte(marhsalled), nil
+	return []byte(marshalled), nil
 }
 
 func (constraint Constraint[any]) MarshalJSON() ([]byte, error) {
@@ -73,9 +73,9 @@ func constraintsMarshaller[anyConstraintSet StringConstraints | NumberConstraint
 		}
 	}
 
-	marhsalled := fmt.Sprintf(`{%s}`, strings.Join(fields, `,`))
+	marshalled := fmt.Sprintf(`{%s}`, strings.Join(fields, `,`))
 
-	return []byte(marhsalled), nil
+	return []byte(marshalled), nil
 }
 
 func (constraints StringConstraints) MarshalJSON() ([]byte, error) {
