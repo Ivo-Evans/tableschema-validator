@@ -19,51 +19,23 @@ func trimCharacters(array string, prefix string, suffix string) string {
 }
 
 func (fields Fields) MarshalJSON() ([]byte, error) {
-	// I think you could do the same thing here as in your constraintsMarshaller, with reflection
 	var fieldStrings []string
 
-	stringFieldbytes, err := json.Marshal(fields.StringFields)
-	if err != nil {
-		return nil, err
-	}
+	val := reflect.ValueOf(fields)
 
-	stringFields := string(stringFieldbytes)
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i).Interface()
+		fieldMarshalled, err := json.Marshal(field)
+		if err != nil {
+			return nil, err
+		}
 
-	if stringFields != `null` {
-		fieldStrings = append(fieldStrings, trimCharacters(stringFields, `[`, `]`))
-	}
+		jsonValue := string(fieldMarshalled)
 
-	numberFieldbytes, err := json.Marshal(fields.NumberFields)
-	if err != nil {
-		return nil, err
-	}
+		if jsonValue != `null` {
+			fieldStrings = append(fieldStrings, trimCharacters(jsonValue, `[`, `]`))
+		}
 
-	numberFields := string(numberFieldbytes)
-
-	if numberFields != `null` {
-		fieldStrings = append(fieldStrings, trimCharacters(numberFields, `[`, `]`))
-	}
-
-	booleanFieldbytes, err := json.Marshal(fields.BooleanFields)
-	if err != nil {
-		return nil, err
-	}
-
-	booleanFields := string(booleanFieldbytes)
-
-	if booleanFields != `null` {
-		fieldStrings = append(fieldStrings, trimCharacters(booleanFields, `[`, `]`))
-	}
-
-	listFieldbytes, err := json.Marshal(fields.ListFields)
-	if err != nil {
-		return nil, err
-	}
-
-	listFields := string(listFieldbytes)
-
-	if listFields != `null` {
-		fieldStrings = append(fieldStrings, trimCharacters(listFields, `[`, `]`))
 	}
 
 	marhsalled := fmt.Sprintf(`[%s]`, strings.Join(fieldStrings, `,`))
