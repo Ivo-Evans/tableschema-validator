@@ -1,26 +1,26 @@
 package schema
 
 type Schema struct {
-	schemaSchema string
+	SchemaSchema string `json:"$schema"`
 	SchemaOptions
 }
 
 func (fields *Fields) insertFieldTypes() {
 	// can't use the value from the range iteration because it's a shallow clone - mutation there won't mutate the receiver
 	for i := range fields.StringFields {
-		fields.StringFields[i].fieldType = "string"
+		fields.StringFields[i].FieldType = "string"
 	}
 
 	for i := range fields.NumberFields {
-		fields.NumberFields[i].fieldType = "number"
+		fields.NumberFields[i].FieldType = "number"
 	}
 
 	for i := range fields.BooleanFields {
-		fields.BooleanFields[i].fieldType = "boolean"
+		fields.BooleanFields[i].FieldType = "boolean"
 	}
 
 	for i := range fields.ListFields {
-		fields.ListFields[i].fieldType = "list"
+		fields.ListFields[i].FieldType = "list"
 	}
 }
 
@@ -28,6 +28,6 @@ func MakeSchema(options SchemaOptions) Schema {
 	options.Fields.insertFieldTypes()
 
 	return Schema{
-		schemaSchema:  `https://datapackage.org/profiles/2.0/tableschema.json`,
+		SchemaSchema:  `https://datapackage.org/profiles/2.0/tableschema.json`,
 		SchemaOptions: options}
 }

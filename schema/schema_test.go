@@ -5,24 +5,23 @@ import (
 	"testing"
 )
 
-
-func TestConstructSchema (t *testing.T) {
+func TestConstructSchema(t *testing.T) {
 	got := MakeSchema(SchemaOptions{
 		Fields: Fields{
 			StringFields: []StringField{
 				{
-					FieldBase: FieldBase{Name: "foo"}, 
+					FieldBase: FieldBase{Name: "foo"},
 					Constraints: StringConstraints{
-						Required: requiredConstraint{selected: true, value: true}, 
-						Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
+						Required: RequiredConstraint{Selected: true, Value: true},
+						Enum:     EnumConstraint{Selected: true, Value: []string{"bar", "baz"}},
 					},
 				},
 				{
-					FieldBase: FieldBase{Name: "bar"}, 
+					FieldBase: FieldBase{Name: "bar"},
 					Constraints: StringConstraints{
-						MinLength: minLengthConstraint{selected: true, value: 10},
-						Required: requiredConstraint{selected: true, value: true}, 
-						Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
+						MinLength: MinLengthConstraint{Selected: true, Value: 10},
+						Required:  RequiredConstraint{Selected: true, Value: true},
+						Enum:      EnumConstraint{Selected: true, Value: []string{"bar", "baz"}},
 					},
 				},
 			},
@@ -30,43 +29,39 @@ func TestConstructSchema (t *testing.T) {
 	})
 
 	expected := Schema{
-		schemaSchema: `https://datapackage.org/profiles/2.0/tableschema.json`,
+		SchemaSchema: `https://datapackage.org/profiles/2.0/tableschema.json`,
 		SchemaOptions: SchemaOptions{
 			Fields: Fields{
 				StringFields: []StringField{
 					{
-						FieldBase: FieldBase{Name: "foo", fieldType: "string"}, 
+						FieldBase: FieldBase{Name: "foo", FieldType: "string"},
 						Constraints: StringConstraints{
-							Required: requiredConstraint{selected: true, value: true}, 
-							Unique: uniqueContraint{selected: false, value: false},
-							Pattern: patternConstraint{selected: false, value: ``},
-							Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
-							MinLength: minLengthConstraint{selected: false, value: 0},
-							MaxLength: maxLengthConstraint{selected: false, value: 0},
+							Required:  RequiredConstraint{Selected: true, Value: true},
+							Unique:    UniqueContraint{Selected: false, Value: false},
+							Pattern:   PatternConstraint{Selected: false, Value: ``},
+							Enum:      EnumConstraint{Selected: true, Value: []string{"bar", "baz"}},
+							MinLength: MinLengthConstraint{Selected: false, Value: 0},
+							MaxLength: MaxLengthConstraint{Selected: false, Value: 0},
 						},
 					},
 					{
-						FieldBase: FieldBase{Name: "bar", fieldType: "string"}, 
+						FieldBase: FieldBase{Name: "bar", FieldType: "string"},
 						Constraints: StringConstraints{
-							Required: requiredConstraint{selected: true, value: true}, 
-							Unique: uniqueContraint{selected: false, value: false},
-							Pattern: patternConstraint{selected: false, value: ``},
-							Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
-							MinLength: minLengthConstraint{selected: true, value: 10},
-							MaxLength: maxLengthConstraint{selected: false, value: 0},
-							},
+							Required:  RequiredConstraint{Selected: true, Value: true},
+							Unique:    UniqueContraint{Selected: false, Value: false},
+							Pattern:   PatternConstraint{Selected: false, Value: ``},
+							Enum:      EnumConstraint{Selected: true, Value: []string{"bar", "baz"}},
+							MinLength: MinLengthConstraint{Selected: true, Value: 10},
+							MaxLength: MaxLengthConstraint{Selected: false, Value: 0},
+						},
 					},
 				},
 			},
 		},
-	} 
-
-	
-
-	
+	}
 
 	if !reflect.DeepEqual(expected, got) {
 		t.Errorf("\nWanted %+v\n got %+v\n", expected, got)
 	}
-	
+
 }
