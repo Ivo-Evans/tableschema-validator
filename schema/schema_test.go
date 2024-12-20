@@ -7,6 +7,28 @@ import (
 
 
 func TestConstructSchema (t *testing.T) {
+	got := MakeSchema(SchemaOptions{
+		Fields: Fields{
+			StringFields: []StringField{
+				{
+					FieldBase: FieldBase{Name: "foo"}, 
+					Constraints: StringConstraints{
+						Required: requiredConstraint{selected: true, value: true}, 
+						Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
+					},
+				},
+				{
+					FieldBase: FieldBase{Name: "bar"}, 
+					Constraints: StringConstraints{
+						MinLength: minLengthConstraint{selected: true, value: 10},
+						Required: requiredConstraint{selected: true, value: true}, 
+						Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
+					},
+				},
+			},
+		},
+	})
+
 	expected := Schema{
 		schemaSchema: `https://datapackage.org/profiles/2.0/tableschema.json`,
 		SchemaOptions: SchemaOptions{
@@ -15,29 +37,31 @@ func TestConstructSchema (t *testing.T) {
 					{
 						FieldBase: FieldBase{Name: "foo", fieldType: "string"}, 
 						Constraints: StringConstraints{
-							Required: true, 
-							Enum: []string{"bar", "baz"},
+							Required: requiredConstraint{selected: true, value: true}, 
+							Unique: uniqueContraint{selected: false, value: false},
+							Pattern: patternConstraint{selected: false, value: ``},
+							Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
+							MinLength: minLengthConstraint{selected: false, value: 0},
+							MaxLength: maxLengthConstraint{selected: false, value: 0},
 						},
+					},
+					{
+						FieldBase: FieldBase{Name: "bar", fieldType: "string"}, 
+						Constraints: StringConstraints{
+							Required: requiredConstraint{selected: true, value: true}, 
+							Unique: uniqueContraint{selected: false, value: false},
+							Pattern: patternConstraint{selected: false, value: ``},
+							Enum: enumConstraint{selected: true, value: []string{"bar", "baz"}},
+							MinLength: minLengthConstraint{selected: true, value: 10},
+							MaxLength: maxLengthConstraint{selected: false, value: 0},
+							},
 					},
 				},
 			},
 		},
 	} 
 
-	got := MakeSchema(SchemaOptions{
-		Fields: Fields{
-			StringFields: []StringField{
-				{
-					FieldBase: FieldBase{Name: "foo"}, 
-					Constraints: StringConstraints{
-						Required: true, 
-						Enum: []string{"bar", "baz"},
-						// there are hidden 0-values here, like maxLength 0. A potential problem
-					},
-				},
-			},
-		},
-	})
+	
 
 	
 

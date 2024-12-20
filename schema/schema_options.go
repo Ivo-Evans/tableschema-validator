@@ -1,13 +1,19 @@
 package schema
 
-type requiredConstraint = bool
-type uniqueContraint = bool
-type patternConstraint = string // has to match XML schema
-type enumConstraint = []string  // min 1 item. All must be unique.
-type minLengthConstraint int64
-type maxLengthConstraint int64
-type minConstraint int64
-type maxConstraint int64
+type Constraint [selection any] struct {
+	// we use selected true/false to tell the difference between a selection's 0-value being deliberately set v.s. defaulting
+	selected bool
+	value selection
+}
+
+type requiredConstraint = Constraint[bool]
+type uniqueContraint = Constraint[bool]
+type patternConstraint = Constraint[string] // has to match XML schema
+type enumConstraint = Constraint[[]string]  // min 1 item. All must be unique.
+type minLengthConstraint = Constraint[int64]
+type maxLengthConstraint = Constraint[int64]
+type minConstraint = Constraint[int64]
+type maxConstraint = Constraint[int64]
 
 type StringConstraints struct {
 	Required  requiredConstraint
