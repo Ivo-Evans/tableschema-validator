@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -64,4 +66,70 @@ func TestConstructSchema(t *testing.T) {
 		t.Errorf("\nWanted %+v\n got %+v\n", expected, got)
 	}
 
+}
+
+func TestMarshallSchemaToJSON(t *testing.T) {
+	schema := MakeSchema(SchemaOptions{
+		Fields: Fields{
+			StringFields: []StringField{
+				{
+					FieldBase: FieldBase{Name: "foo"},
+					Constraints: StringConstraints{
+						Required: RequiredConstraint{Selected: true, Value: true},
+						Enum:     EnumConstraint{Selected: true, Value: []string{"bar", "baz"}},
+					},
+				},
+				{
+					FieldBase: FieldBase{Name: "bar"},
+					Constraints: StringConstraints{
+						MinLength: MinLengthConstraint{Selected: true, Value: 10},
+						Required:  RequiredConstraint{Selected: true, Value: true},
+						Enum:      EnumConstraint{Selected: true, Value: []string{"bar", "baz"}},
+					},
+				},
+			},
+		},
+	})
+
+	asJson, err := json.MarshalIndent(schema, "", "  ")
+
+	if err != nil {
+		t.Errorf("Failed to marshall schema to JSON with error %s", err)
+	}
+
+	got := strings.TrimSpace(string(asJson))
+
+	expected := strings.TrimSpace(`{
+  "$schema": "https://datapackage.org/profiles/2.0/tableschema.json",
+  "fields": [
+    {
+      "type": "string",
+      "name": "foo",
+      "constraints": {
+        "required": true,
+        "enum": [
+          "bar",
+          "baz"
+        ]
+      }
+    },
+    {
+      "type": "string",
+      "name": "bar",
+      "constraints": {
+        "required": true,
+        "enum": [
+          "bar",
+          "baz"
+        ],
+        "minLength": 10
+      }
+    }
+  ]
+}
+`)
+
+	if got != expected {
+		t.Errorf("\nWanted %s got %s", expected, got)
+	}
 }
