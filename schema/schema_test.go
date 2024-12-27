@@ -2,9 +2,12 @@ package schema
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 func TestConstructSchema(t *testing.T) {
@@ -94,7 +97,7 @@ func TestMarshallSchemaToJSON(t *testing.T) {
 	asJson, err := json.MarshalIndent(schema, "", "  ")
 
 	if err != nil {
-		t.Errorf("Failed to marshall schema to JSON with error %s", err)
+		t.Errorf("Failed to marshall schema to JSON with error %s", err.Error())
 	}
 
 	got := strings.TrimSpace(string(asJson))
@@ -132,4 +135,23 @@ func TestMarshallSchemaToJSON(t *testing.T) {
 	if got != expected {
 		t.Errorf("\nWanted %s got %s", expected, got)
 	}
+
+	schemaLoader := gojsonschema.NewReferenceLoader("file://../schema.json")
+	documentLoader := gojsonschema.NewStringLoader(got)
+
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+
+	if err != nil {
+		t.Errorf("Failed to validate schema, got %s", err.Error())
+		panic(err.Error())
+	}
+
+	if !result.Valid() {
+		fmt.Printf("The document is not valid. see errors :\n")
+		for _, desc := range result.Errors() {
+			fmt.Printf("- %s\n", desc)
+		}
+		t.Errorf("Generated an invalid tableschema. Generated %s", got)
+	}
+
 }
