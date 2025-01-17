@@ -2,7 +2,10 @@ module tableschema-validator
 
 go 1.23.0
 
-require github.com/xeipuuv/gojsonschema v1.2.0
+require (
+	github.com/google/go-cmp v0.6.0
+	github.com/xeipuuv/gojsonschema v1.2.0
+)
 
 require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect

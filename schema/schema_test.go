@@ -3,10 +3,10 @@ package schema
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -65,10 +65,9 @@ func TestConstructSchema(t *testing.T) {
 		},
 	}
 
-	if !reflect.DeepEqual(expected, got) {
-		t.Errorf("\nWanted %+v\n got %+v\n", expected, got)
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Errorf("(-want +got):\n%s", diff)
 	}
-
 }
 
 func TestMarshallSchemaToJSON(t *testing.T) {
@@ -136,7 +135,7 @@ func TestMarshallSchemaToJSON(t *testing.T) {
 		t.Errorf("\nWanted %s got %s", expected, got)
 	}
 
-	schemaLoader := gojsonschema.NewReferenceLoader("file://../schema.json")
+	schemaLoader := gojsonschema.NewReferenceLoader("file://../test-data/tableschema-json-schema.json")
 	documentLoader := gojsonschema.NewStringLoader(got)
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
