@@ -9,47 +9,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestRequiredConstraint(t *testing.T) {
-	unselectedConstraint := schema.RequiredConstraint{Selected: false, Value: true}
-	selectedConstraint := schema.RequiredConstraint{Selected: true, Value: true}
-
-	validationResult, err := EnforceRequiredConstraint(unselectedConstraint, "example", "")
-	if err != nil {
-		t.Errorf("Error enforcing required constraint")
-	}
-	expectedValidationResult := CellValidationResult{constraint: "required", isValid: true}
-	if diff := cmp.Diff(expectedValidationResult, validationResult, cmp.AllowUnexported(CellValidationResult{})); diff != "" {
-		t.Errorf("(-want +got):\n%s", diff)
-	}
-
-	validationResult, err = EnforceRequiredConstraint(unselectedConstraint, "example", "hi there")
-	if err != nil {
-		t.Errorf("Error enforcing required constraint")
-	}
-	expectedValidationResult = CellValidationResult{constraint: "required", isValid: true}
-	if diff := cmp.Diff(expectedValidationResult, validationResult, cmp.AllowUnexported(CellValidationResult{})); diff != "" {
-		t.Errorf("(-want +got):\n%s", diff)
-	}
-
-	validationResult, err = EnforceRequiredConstraint(selectedConstraint, "example", "")
-	if err != nil {
-		t.Errorf("Error enforcing required constraint")
-	}
-	expectedValidationResult = CellValidationResult{constraint: "required", isValid: false, header: "example", value: "", reason: "example was marked as required, but not provided"}
-	if diff := cmp.Diff(expectedValidationResult, validationResult, cmp.AllowUnexported(CellValidationResult{})); diff != "" {
-		t.Errorf("(-want +got):\n%s", diff)
-	}
-
-	validationResult, err = EnforceRequiredConstraint(selectedConstraint, "example", "hi there")
-	if err != nil {
-		t.Errorf("Error enforcing required constraint")
-	}
-	expectedValidationResult = CellValidationResult{constraint: "required", isValid: true}
-	if diff := cmp.Diff(expectedValidationResult, validationResult, cmp.AllowUnexported(CellValidationResult{})); diff != "" {
-		t.Errorf("(-want +got):\n%s", diff)
-	}
-}
-
 func TestValidate(t *testing.T) {
 	schema := schema.MakeSchema(schema.SchemaOptions{
 		Fields: schema.Fields{

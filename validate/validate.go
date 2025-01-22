@@ -44,7 +44,7 @@ func validateRow(rawRow []string, row map[string]string, schema schema.Schema) (
 	}
 
 	for _, stringField := range schema.Fields.StringFields {
-		dataTypeValidationFailure, err := EnforceStringDataType()
+		dataTypeValidationFailure, err := EnforceStringConstraint()
 		if err != nil {
 			return RowValidationResult{}, err
 		}
@@ -57,7 +57,7 @@ func validateRow(rawRow []string, row map[string]string, schema schema.Schema) (
 	}
 
 	for _, numberField := range schema.Fields.NumberFields {
-		dataTypeValidationFailure, err := EnforceNumberDataType(numberField.Name, row[numberField.Name])
+		dataTypeValidationFailure, err := EnforceNumberConstraint(numberField.Name, row[numberField.Name])
 		if err != nil {
 			return RowValidationResult{}, err
 		}

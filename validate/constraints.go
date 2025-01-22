@@ -7,16 +7,16 @@ import (
 	"tableschema-validator/schema"
 )
 
-func EnforceStringDataType() (CellValidationResult, error) {
+func EnforceStringConstraint() (CellValidationResult, error) {
 	// the CSV comes through as a string, meaning every field can be interpreted as a string
 	// that makes this constraint a bit 'dumb', but I've included it for consistency so that
 	// a field of any data type will have a validator for its datatype.
-	return CellValidationResult{constraint: "String data type", isValid: true}, nil
+	return CellValidationResult{constraint: "String", isValid: true}, nil
 }
 
-func EnforceNumberDataType(header string, field string) (CellValidationResult, error) {
+func EnforceNumberConstraint(header string, field string) (CellValidationResult, error) {
 	trimmed := strings.TrimSpace(field)
-	validResponse := CellValidationResult{constraint: "Number data type", isValid: true}
+	validResponse := CellValidationResult{constraint: "Number", isValid: true}
 
 	specialValues := []string{"NaN", "INF", "-INF"}
 	if slices.Contains(specialValues, trimmed) {
@@ -33,7 +33,7 @@ func EnforceNumberDataType(header string, field string) (CellValidationResult, e
 		return validResponse, nil
 	}
 
-	return CellValidationResult{constraint: "Number data type", isValid: false, header: header, value: field, reason: "value " + field + " could not be parsed as a number"}, nil
+	return CellValidationResult{constraint: "Number", isValid: false, header: header, value: field, reason: header + " was marked as a number, but its value " + field + " could not be parsed as a number"}, nil
 
 }
 
