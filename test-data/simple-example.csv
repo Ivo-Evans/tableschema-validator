@@ -1,5 +1,5 @@
-foo,bar
-baz,baz
-bar,luhrman
-100,antidisestablishmentarianism
-,qux
+foo,bar,php
+baz,baz,0
+bar,luhrman,2
+100,antidisestablishmentarianism,3
+,qux,

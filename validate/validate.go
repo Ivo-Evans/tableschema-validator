@@ -8,55 +8,63 @@ type Readable interface {
 	ReadAll() (records [][]string, err error)
 }
 
-type CellValidationFailure struct {
+type CellValidationResult struct {
 	header     string
 	value      string
 	constraint string
 	reason     string
+	isValid    bool
 }
 
 type RowValidationResult struct {
 	original []string
 	isValid  bool
-	failures []CellValidationFailure
+	failures []CellValidationResult
 }
 
-func enforceRequiredConstraint(requiredConstraint schema.Constraint[bool], header string, field string) (isValid bool, validationResult CellValidationFailure) {
-
-	if !(requiredConstraint.Selected && requiredConstraint.Value) {
-		return true, CellValidationFailure{}
-	}
-
-	if field == "" {
-		return false, CellValidationFailure{constraint: "required", header: header, value: field, reason: (header + " was marked as required, but not provided")}
-	} else {
-		return true, CellValidationFailure{}
-	}
-}
-
-func mapRowCellsToHeaders(headers []string, rawRow []string) (map[string]string) {
+func mapRowCellsToHeaders(headers []string, rawRow []string) map[string]string {
 	row := make(map[string]string)
 
-		for headerIndex, header := range headers {
-			row[header] = rawRow[headerIndex]
-		}
+	for headerIndex, header := range headers {
+		row[header] = rawRow[headerIndex]
+	}
 
-		return row
+	return row
 }
 
-func validateRow (rawRow []string, row map[string]string, schema schema.Schema) (RowValidationResult) {
+func validateRow(rawRow []string, row map[string]string, schema schema.Schema) (RowValidationResult, error) {
 	isValid := true
-	var validationFailures []CellValidationFailure
+	var validationFailures []CellValidationResult
 
-	for _, stringField := range schema.Fields.StringFields {
-		isRequiredValid, requiredValidationFailure := enforceRequiredConstraint(stringField.Constraints.Required, stringField.Name, row[stringField.Name])
-		if !isRequiredValid {
+	handleValidationResult := func(result CellValidationResult) {
+		if !result.isValid {
 			isValid = false
-			validationFailures = append(validationFailures, requiredValidationFailure)
+			validationFailures = append(validationFailures, result)
 		}
 	}
 
-	return RowValidationResult{original: rawRow, isValid: isValid, failures: validationFailures}
+	for _, stringField := range schema.Fields.StringFields {
+		dataTypeValidationFailure, err := EnforceStringDataType()
+		if err != nil {
+			return RowValidationResult{}, err
+		}
+		handleValidationResult(dataTypeValidationFailure)
+		requiredValidationFailure, err := EnforceRequiredConstraint(stringField.Constraints.Required, stringField.Name, row[stringField.Name])
+		if err != nil {
+			return RowValidationResult{}, err
+		}
+		handleValidationResult(requiredValidationFailure)
+	}
+
+	for _, numberField := range schema.Fields.NumberFields {
+		dataTypeValidationFailure, err := EnforceNumberDataType(numberField.Name, row[numberField.Name])
+		if err != nil {
+			return RowValidationResult{}, err
+		}
+		handleValidationResult(dataTypeValidationFailure)
+	}
+
+	return RowValidationResult{original: rawRow, isValid: isValid, failures: validationFailures}, nil
 }
 
 func Validate(schema schema.Schema, sourceData Readable) ([]RowValidationResult, error) {
@@ -71,7 +79,10 @@ func Validate(schema schema.Schema, sourceData Readable) ([]RowValidationResult,
 
 	for _, rawRow := range data[1:] {
 		row := mapRowCellsToHeaders(headers, rawRow)
-		rowValidationResult := validateRow(rawRow, row, schema)
+		rowValidationResult, err := validateRow(rawRow, row, schema)
+		if err != nil {
+			return validationResults, err
+		}
 		validationResults = append(validationResults, rowValidationResult)
 	}
 
