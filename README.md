@@ -30,3 +30,27 @@ Lint the project with
 ```
 golangci-lint run # needs a local installation of golanci-lint
 ```
+
+
+Check to implement
+
+- [x] Number 
+  - [x] required
+  - [ ] unique
+  - [ ] min
+  - [ ] max
+- [x] String
+  - [x] required 
+  - [ ] unique
+  - [ ] pattern
+  - [ ] enum
+  - [ ] minLength
+  - [ ] maxLength
+- [ ] Boolean
+  - [ ] required
+  - [ ] enum
+- [ ] List
+  - [ ] Required
+  - [ ] minLength
+  - [ ] maxLength
+  // list probably needs a bit of work.

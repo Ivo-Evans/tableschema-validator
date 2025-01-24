@@ -61,7 +61,13 @@ func validateRow(rawRow []string, row map[string]string, schema schema.Schema) (
 		if err != nil {
 			return RowValidationResult{}, err
 		}
+
 		handleValidationResult(dataTypeValidationFailure)
+		requiredValidationFailure, err := EnforceRequiredConstraint(numberField.Constraints.Required, numberField.Name, row[numberField.Name])
+		if err != nil {
+			return RowValidationResult{}, err
+		}
+		handleValidationResult(requiredValidationFailure)
 	}
 
 	return RowValidationResult{original: rawRow, isValid: isValid, failures: validationFailures}, nil

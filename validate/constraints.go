@@ -39,6 +39,7 @@ func EnforceNumberConstraint(header string, field string) (CellValidationResult,
 
 func EnforceRequiredConstraint(requiredConstraint schema.Constraint[bool], header string, field string) (CellValidationResult, error) {
 	validResponse := CellValidationResult{constraint: "required", isValid: true}
+	// Why check for both Selected and Value? Selected tells us that the Value false is not to be interpreted as a 0 value bool - we can beliefe Value == false means the user has opted out
 	if !(requiredConstraint.Selected && requiredConstraint.Value) {
 		return validResponse, nil
 	}

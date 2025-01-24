@@ -28,6 +28,12 @@ func TestValidate(t *testing.T) {
 						Enum:      schema.EnumConstraint{Selected: true, Value: []string{"bar", "baz"}},
 					},
 				},
+				{
+					FieldBase: schema.FieldBase{Name: "php"},
+					Constraints: schema.StringConstraints{
+						Required: schema.RequiredConstraint{Selected: true, Value: true},
+					},
+				},
 			},
 		},
 	})
@@ -44,7 +50,10 @@ func TestValidate(t *testing.T) {
 		{original: []string{"baz", "baz", "0"}, isValid: true, failures: nil},
 		{original: []string{"bar", "luhrman", "2"}, isValid: true, failures: nil},
 		{original: []string{"100", "antidisestablishmentarianism", "3"}, isValid: true, failures: nil},
-		{original: []string{"", "qux", ""}, isValid: false, failures: []CellValidationResult{{header: "foo", constraint: "required", isValid: false, value: "", reason: "foo was marked as required, but not provided"}}},
+		{original: []string{"", "qux", ""}, isValid: false, failures: []CellValidationResult{
+			{header: "foo", constraint: "required", isValid: false, value: "", reason: "foo was marked as required, but not provided"},
+			{header: "php", constraint: "required", isValid: false, value: "", reason: "php was marked as required, but not provided"},
+		}},
 	}
 
 	got, err := Validate(schema, reader)
