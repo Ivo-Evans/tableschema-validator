@@ -17,9 +17,10 @@ type CellValidationResult struct {
 }
 
 type RowValidationResult struct {
-	original []string
-	isValid  bool
-	failures []CellValidationResult
+	Original []string
+	Parsed   map[string]string
+	IsValid  bool
+	Failures []CellValidationResult
 }
 
 func mapRowCellsToHeaders(headers []string, rawRow []string) map[string]string {
@@ -70,7 +71,26 @@ func validateRow(rawRow []string, row map[string]string, schema schema.Schema) (
 		handleValidationResult(requiredValidationFailure)
 	}
 
-	return RowValidationResult{original: rawRow, isValid: isValid, failures: validationFailures}, nil
+	return RowValidationResult{Original: rawRow, Parsed: row, IsValid: isValid, Failures: validationFailures}, nil
+}
+
+func validateColumns(schema schema.Schema, validatedRows *[]RowValidationResult) *[]RowValidationResult {
+	for _, stringField := range schema.Fields.StringFields {
+		if stringField.Constraints.Unique.Selected == true && stringField.Constraints.Unique.Value == true {
+			EnforceUniqueConstraint(stringField.Constraints.Unique, stringField.Name, validatedRows)
+
+		}
+		continue
+	}
+
+	for _, numberField := range schema.Fields.NumberFields {
+		if numberField.Constraints.Unique.Selected == true && numberField.Constraints.Unique.Value == true {
+			EnforceUniqueConstraint(numberField.Constraints.Unique, numberField.Name, validatedRows)
+		}
+		continue
+	}
+
+	return validatedRows
 }
 
 func Validate(schema schema.Schema, sourceData Readable) ([]RowValidationResult, error) {
@@ -81,17 +101,19 @@ func Validate(schema schema.Schema, sourceData Readable) ([]RowValidationResult,
 
 	headers := data[0]
 
-	var validationResults []RowValidationResult
+	var rowValidationResults []RowValidationResult
 
 	for _, rawRow := range data[1:] {
 		row := mapRowCellsToHeaders(headers, rawRow)
 		rowValidationResult, err := validateRow(rawRow, row, schema)
 		if err != nil {
-			return validationResults, err
+			return rowValidationResults, err
 		}
-		validationResults = append(validationResults, rowValidationResult)
+		rowValidationResults = append(rowValidationResults, rowValidationResult)
 	}
 
-	return validationResults, nil
+	columnValidationResults := validateColumns(schema, &rowValidationResults)
+
+	return *columnValidationResults, nil
 }
 

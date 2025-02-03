@@ -2,6 +2,7 @@ package validate
 
 import (
 	"tableschema-validator/schema"
+
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -169,6 +170,43 @@ func TestRequiredConstraint(t *testing.T) {
 	}
 	expectedValidationResult = CellValidationResult{constraint: "required", isValid: true}
 	if diff := cmp.Diff(expectedValidationResult, validationResult, cmp.AllowUnexported(CellValidationResult{})); diff != "" {
+		t.Errorf("(-want +got):\n%s", diff)
+	}
+}
+
+func TestUniqueConstraint(t *testing.T) {
+	constraint := schema.UniqueContraint{Selected: true, Value: true}
+	header := "foo"
+	actual := []RowValidationResult{
+		{Original: []string{"bar"}, Parsed: map[string]string{"foo": "bar"}, IsValid: true},
+		{Original: []string{"baz"}, Parsed: map[string]string{"foo": "baz"}, IsValid: true},
+		{Original: []string{"bar"}, Parsed: map[string]string{"foo": "bar"}, IsValid: true},
+	}
+	
+	EnforceUniqueConstraint(constraint, header, &actual)
+
+	expected := []RowValidationResult{
+		{Original: []string{"bar"}, Parsed: map[string]string{"foo": "bar"}, IsValid: false, Failures: []CellValidationResult{
+			{
+				header:     "foo",
+				value:      "bar",
+				constraint: "unique",
+				reason:     "foo was marked as unique but its value bar was found on rows 0, 2 (this row: 0)",
+			},
+		}},
+		{Original: []string{"baz"}, Parsed: map[string]string{"foo": "baz"}, IsValid: true},
+		{Original: []string{"bar"}, Parsed: map[string]string{"foo": "bar"}, IsValid: false, Failures: []CellValidationResult{
+			{
+				header:     "foo",
+				value:      "bar",
+				constraint: "unique",
+				reason:     "foo was marked as unique but its value bar was found on rows 0, 2 (this row: 2)",
+			},
+		},
+		},
+	}
+
+	if diff := cmp.Diff(expected, actual, cmp.AllowUnexported(CellValidationResult{})); diff != "" {
 		t.Errorf("(-want +got):\n%s", diff)
 	}
 }
