@@ -182,7 +182,7 @@ func TestUniqueConstraint(t *testing.T) {
 		{Original: []string{"baz"}, Parsed: map[string]string{"foo": "baz"}, IsValid: true},
 		{Original: []string{"bar"}, Parsed: map[string]string{"foo": "bar"}, IsValid: true},
 	}
-	
+
 	EnforceUniqueConstraint(constraint, header, &actual)
 
 	expected := []RowValidationResult{

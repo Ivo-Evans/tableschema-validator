@@ -54,38 +54,33 @@ func EnforceRequiredConstraint(requiredConstraint schema.Constraint[bool], heade
 }
 
 func EnforceUniqueConstraint(uniqueConstraint schema.Constraint[bool], header string, validatedRows *[]RowValidationResult) {
-	// this could be optimised (for instance, we iterate through _every_ row for _each_ unique constraint, which is inefficient) but that isn't a priority right now
+	// this could be optimised (for instance, we iterate through _every_ row for _each_ unique constraint, which is inefficient) but that isn't a priority until there's a need to optimise
 
-	dedupedValueIndices := make(map[string]int) // the index of the list time we saw a given value, keyed to the value
-	dupes := make(map[string][]int)             // the indices of each time we've seen a given value, keyed to the value, if we saw it more than once. 
-	// The code could probably be cleaned up if we collapsed these two maps into one. Then in the second for loop, we could just check if 
-	// a given value had more than one index
+	uniqueValueIndices := make(map[string][]int)
 
 	for index, row := range *validatedRows {
 		value := row.Parsed[header]
-		lastSeenIndex, hasBeenSeen := dedupedValueIndices[value]
-		if hasBeenSeen {
-			_, valueDupesExist := dupes[value]
-
-			if !valueDupesExist {
-				dupes[value] = append(dupes[value], lastSeenIndex)
-			}
-
-			dupes[value] = append(dupes[value], index)
-		}
-		dedupedValueIndices[value] = index
+		uniqueValueIndices[value] = append(uniqueValueIndices[value], index)
 	}
 
-	for duplicatedValue, indices := range dupes {
-		for _, duplicatedValueIndex := range indices {
-			newRow := (*validatedRows)[duplicatedValueIndex]
+	for sourceValue, sourceIndices := range uniqueValueIndices {
+		isValueDuplicated := len(sourceIndices) > 1
 
-			failure := CellValidationResult{constraint: "unique", isValid: false, header: header, value: duplicatedValue, reason: header + " was marked as unique but its value " + duplicatedValue + " was found on rows " + util.CommaSeparatedList(indices) + " (this row: " + strconv.Itoa(duplicatedValueIndex) + ")"}
+		if !isValueDuplicated {
+			continue
+		}
+
+		for _, sourceIndexOfDuplicate := range sourceIndices {
+			newRow := (*validatedRows)[sourceIndexOfDuplicate]
+
+			reason := header + " was marked as unique but its value " + sourceValue + " was found on rows " + util.CommaSeparatedList(sourceIndices) + " (this row: " + strconv.Itoa(sourceIndexOfDuplicate) + ")"
+
+			failure := CellValidationResult{constraint: "unique", isValid: false, header: header, value: sourceValue, reason: reason}
 
 			newRow.Failures = append(newRow.Failures, failure)
 			newRow.IsValid = false
 
-			(*validatedRows)[duplicatedValueIndex] = newRow
+			(*validatedRows)[sourceIndexOfDuplicate] = newRow
 		}
 	}
 
