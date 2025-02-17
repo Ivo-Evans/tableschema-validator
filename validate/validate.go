@@ -117,3 +117,9 @@ func Validate(schema schema.Schema, sourceData Readable) ([]RowValidationResult,
 	return *columnValidationResults, nil
 }
 
+// TODOs
+// remaining checks
+// package can be installed into another Go project
+// Possibly add coerced values to output - though it could be a pain because there are no sum types, have to think about it. The answer is probably reflection and tags on a passed struct.
+// you might want to have a think about, like, module boundaries and stuff to neaten up imports/ownership.
+// interesting approach to a similar problem you have here https://www.reddit.com/r/golang/comments/1ijcaki/how_would_you_decodeencode_json_sum_types_in_go/
