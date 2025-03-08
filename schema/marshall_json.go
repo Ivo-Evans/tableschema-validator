@@ -18,6 +18,9 @@ func trimCharacters(array string, prefix string, suffix string) string {
 	return array
 }
 
+// Fields.MarshalJSON turns a Fields object created by this package into a valid
+// tableschema json string. The values of the Fields struct are separated from their
+// keys and turned into a mixed-type json list.  
 func (fields Fields) MarshalJSON() ([]byte, error) {
 	var fieldStrings []string
 
@@ -43,6 +46,9 @@ func (fields Fields) MarshalJSON() ([]byte, error) {
 	return []byte(marshalled), nil
 }
 
+// Contrainst.MarshalJSON turns a Constraint object created by this package into a
+// valid tableschema json string. Constraints that are not selected are filtered out.
+// Constraints that are selected are replaced with Constraint.Value
 func (constraint Constraint[any]) MarshalJSON() ([]byte, error) {
 	if !constraint.Selected {
 		return []byte(`null`), nil

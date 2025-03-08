@@ -1,3 +1,5 @@
+// Package schema exposes a factory function that the user can use to create a Schema object
+// A Schema object can then be used by the validate package to validate some source data.
 package schema
 
 type Schema struct {
@@ -24,6 +26,7 @@ func (fields *Fields) insertFieldTypes() {
 	}
 }
 
+// Takes a set of SchemaOptions and converts them into a valid Schema
 func MakeSchema(options SchemaOptions) Schema {
 	options.Fields.insertFieldTypes()
 

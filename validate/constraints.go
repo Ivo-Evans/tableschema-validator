@@ -9,13 +9,17 @@ import (
 	"tableschema-validator/util"
 )
 
+// EnforceStringConstraint reports whether a cell can be interpreted as a string.
+// Since the raw data comes through as a string, this function marks every value
+// as being able to be interpreted as a string. It is included for consistency with
+// other data-type constraints, e.g. EnforceNumberConstraint, EnforceListConstraint.
 func EnforceStringConstraint() (CellValidationResult, error) {
-	// the CSV comes through as a string, meaning every field can be interpreted as a string.
-	// that makes this constraint a bit 'dumb', but I've included it for consistency so that
-	// a field of any data type will have a validator for its datatype.
 	return CellValidationResult{constraint: "String", isValid: true}, nil
 }
 
+// EnforceNumberConstraint reports whether a cell can be interpreted as a number,
+// defined [here](https://datapackage.org/standard/table-schema/#number). There are
+// a number of edge cases covered in the tests for this function. 
 func EnforceNumberConstraint(header string, field string) (CellValidationResult, error) {
 	trimmed := strings.TrimSpace(field)
 	validResponse := CellValidationResult{constraint: "Number", isValid: true}
@@ -25,7 +29,7 @@ func EnforceNumberConstraint(header string, field string) (CellValidationResult,
 		return validResponse, nil
 	}
 
-	// I find the use of a regex here a bit sus - but in the interests of time, since this is only a side project, I think it's worthwhile and robust enough
+	// I find the use of a regex here a bit sus - but in the interests of time, since this is only a side project, I think it's worthwhile and robust enough. There are relatively thorough tests for it. 
 	isMatch, err := regexp.MatchString("^[+-]?\\d+\\.?\\d*(E[+-]?\\d+)?$", field)
 	if err != nil {
 		return CellValidationResult{}, err
@@ -39,6 +43,10 @@ func EnforceNumberConstraint(header string, field string) (CellValidationResult,
 
 }
 
+// EnforceRequiredConstraint reports whether a cell is both required and absent.
+// if the cell is both required and absent, EnforceRequiredConstraint marks the cell
+// as invalid; if the cell is either not required, or has a value, it is reported as
+// valid. 
 func EnforceRequiredConstraint(requiredConstraint schema.Constraint[bool], header string, field string) (CellValidationResult, error) {
 	validResponse := CellValidationResult{constraint: "required", isValid: true}
 	// Why check for both Selected and Value? Selected tells us that the Value false is not to be interpreted as a 0 value bool - we can beliefe Value == false means the user has opted out
@@ -53,6 +61,8 @@ func EnforceRequiredConstraint(requiredConstraint schema.Constraint[bool], heade
 	}
 }
 
+// EnfoceUniqueConstraint applies a single column's unique constraint to the passed slice of RowValidationResult items, mutating the slice.
+// Duplicates are marked as invalid, and the address of each invalid row is inserted into each invalid row's `RowValidationResult`.
 func EnforceUniqueConstraint(uniqueConstraint schema.Constraint[bool], header string, validatedRows *[]RowValidationResult) {
 	// this could be optimised (for instance, we iterate through _every_ row for _each_ unique constraint, which is inefficient) but that isn't a priority until there's a need to optimise
 

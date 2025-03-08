@@ -1,3 +1,7 @@
+// Package validate exposes the Validate function as well as various functions used by it.
+// Validate takes a schema from [schema/schema.go] and something that implements `ReadAll()`,
+// such as a `*csv.Reader` from Go's `encoding/csv`library, and returns a list of
+// `RowValidationResult` structs.
 package validate
 
 import (
@@ -8,6 +12,8 @@ type Readable interface {
 	ReadAll() (records [][]string, err error)
 }
 
+// A CellValidationResult is the `verdict` on a single cell-constraint combination. This means a single cell could have multiple
+// CellValidationResults if it fails multiple validations (really? check this. Possibly rename). 
 type CellValidationResult struct {
 	header     string
 	value      string
@@ -16,6 +22,10 @@ type CellValidationResult struct {
 	isValid    bool
 }
 
+// A RowValidationResult is the 'verdict' on a single row. It includes the Validate package's internal representation of the row,
+// as well as an `isValid` result which is false iff there is at least one item in the Failures slice. While a `CellValidationResult`
+// may be produced for a valid or an invalid row, it will only exist in a `RowValidationResult` to indicate invalid data - if
+// `CellValidationResult.isValid` is false.
 type RowValidationResult struct {
 	Original []string
 	Parsed   map[string]string
@@ -33,6 +43,8 @@ func mapRowCellsToHeaders(headers []string, rawRow []string) map[string]string {
 	return row
 }
 
+// validateRow is used for standard validations. It takes the raw row string, a map of input header to csv values, and then a row
+// it then applies all validations to the row that aren't relational, i.e. don't depend on other rows.
 func validateRow(rawRow []string, row map[string]string, schema schema.Schema) (RowValidationResult, error) {
 	isValid := true
 	var validationFailures []CellValidationResult
@@ -74,6 +86,8 @@ func validateRow(rawRow []string, row map[string]string, schema schema.Schema) (
 	return RowValidationResult{Original: rawRow, Parsed: row, IsValid: isValid, Failures: validationFailures}, nil
 }
 
+// validateColumns is used for validations which depend on comparong values from multiple cells in the same column. 
+// Currently this only includes unique validations.
 func validateColumns(schema schema.Schema, validatedRows *[]RowValidationResult) *[]RowValidationResult {
 	for _, stringField := range schema.Fields.StringFields {
 		if stringField.Constraints.Unique.Selected == true && stringField.Constraints.Unique.Value == true {
@@ -93,6 +107,9 @@ func validateColumns(schema schema.Schema, validatedRows *[]RowValidationResult)
 	return validatedRows
 }
 
+// Validate takes a schema from [schema/schema.go] and something that implements `ReadAll()`,
+// such as a `*csv.Reader` from Go's `encoding/csv`library, and returns a list of
+// `RowValidationResult` structs.
 func Validate(schema schema.Schema, sourceData Readable) ([]RowValidationResult, error) {
 	data, err := sourceData.ReadAll()
 	if err != nil {
@@ -123,3 +140,4 @@ func Validate(schema schema.Schema, sourceData Readable) ([]RowValidationResult,
 // Possibly add coerced values to output - though it could be a pain because there are no sum types, have to think about it. The answer is probably reflection and tags on a passed struct.
 // you might want to have a think about, like, module boundaries and stuff to neaten up imports/ownership.
 // interesting approach to a similar problem you have here https://www.reddit.com/r/golang/comments/1ijcaki/how_would_you_decodeencode_json_sum_types_in_go/
+// godoc could be interesting too

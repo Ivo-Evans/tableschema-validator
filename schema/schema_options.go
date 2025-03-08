@@ -1,5 +1,12 @@
 package schema
 
+// A Constraint object is a specification of a particular constraint
+// If Selected is true, Value is read
+// Value is then the constraint's value, e.g. for a Pattern constraint
+// Value might be a regular expression. If Selected is true and Value
+// is a 0 value, Value is taken to be the value. For instance, a
+// minConstraint which was selected with a value of 0 would enforce
+// that source data values were above 0.
 type Constraint[selection any] struct {
 	// we use Selected true/false to tell the difference between a selection's 0-value being deliberately set v.s. defaulting
 	Selected bool
@@ -81,6 +88,11 @@ type ListField struct {
 	Constraints ListConstraints `json:"constraints"`
 }
 
+// The fields, or columns, of the source data, that are to be included in the schema.
+// Fields are split into their types rather than being a list like in the output json
+// version of the schema or the csv header row because of the difficulty of modelling 
+// sum types in Golang. An outcome of this is that as a user, you cannot control the 
+// order of your field definitions.
 type Fields struct {
 	StringFields  []StringField
 	NumberFields  []NumberField
